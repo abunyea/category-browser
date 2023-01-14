@@ -1,6 +1,13 @@
-const express = require('express')
-const app = express()
-const port = 8080
+const express = require('express');
+const db = require('./db');
+const app = express();
+const port = 8080;
 
-app.get('/', (req, res) => res.send('Hello World!'))
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+var dbPool = db.connect();
+
+app.get('/', (req, res) => {
+    var result = dbPool.query('SELECT * from Categories', (err, rows) => {
+        res.json(rows);
+    });
+});
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
