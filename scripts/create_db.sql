@@ -1,3 +1,6 @@
+CREATE DATABASE Ontology;
+USE Ontology;
+
 CREATE TABLE Categories(
 	conceptId      INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	displayName    VARCHAR(200),
