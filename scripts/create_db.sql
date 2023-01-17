@@ -3,9 +3,10 @@ USE Ontology;
 
 CREATE TABLE Categories(
 	conceptId      INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	displayName    VARCHAR(200),
-  	description    TEXT,
-  	alternateNames TEXT
+	displayName    VARCHAR(255),
+  	description    VARCHAR(255),
+  	alternateNames VARCHAR(255),
+	FULLTEXT idx (displayName, description, alternateNames)
 );
 
 CREATE TABLE Edges(

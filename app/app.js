@@ -6,6 +6,18 @@ const port = 8080
 
 var dbPool = db.connect();
 
+
+app.get('/categories/search', (req, res) => {
+  const query = req.query['q'];
+  db.search(dbPool, query, (err, rows) => {
+    if (err) {
+      logSqlError(res, err);
+      return;
+    }
+    res.json(rows);
+  });
+});
+
 app.get('/categories', (_req, res) => {
   db.categories(dbPool, (err, rows) => {
     if (err) {

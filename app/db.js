@@ -15,6 +15,17 @@ function categories(pool, callback) {
     pool.query(query, callback);
 }
 
+function search(pool, query, callback) {
+    const selectMatch = `SELECT 
+        conceptId, 
+        displayName, 
+        MATCH(displayName, description, alternateNames) AGAINST(?) AS relevance
+    FROM Categories
+    HAVING relevance > 0
+    ORDER BY relevance DESC`;
+    pool.query(selectMatch, [query], callback);
+}
+
 function category(pool, conceptId, callback) {
     const selectCategory = 'SELECT * FROM Categories WHERE conceptId = ?';
 
@@ -72,3 +83,4 @@ function category(pool, conceptId, callback) {
 exports.connect = connect;
 exports.categories = categories;
 exports.category = category;
+exports.search = search;
