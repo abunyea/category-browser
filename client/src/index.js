@@ -7,7 +7,7 @@ import {
 import './index.css';
 import ErrorPage from './error-page';
 import Root from './routes/root';
-import Categories, { loader as categoriesLoader } from './routes/categories';
+import Categories, { loader as categoriesLoader, searchLoader } from './routes/categories';
 import Category, { loader as categoryLoader } from './routes/category';
 import reportWebVitals from './reportWebVitals';
 
@@ -21,6 +21,11 @@ const router = createBrowserRouter([
         index: true,
         element: <Categories />,
         loader: categoriesLoader,
+      },
+      {
+        path: 'search',
+        element: <Categories />,
+        loader: searchLoader,
       },
       {
         path: 'categories/:conceptId',
