@@ -5,14 +5,14 @@ const path = require('path');
 const db = require('./db');
 
 const app = express()
-const port = 8080
+const port = 8081
 
 var dbPool = db.connect();
 
 
 app.use(bodyParser.json());
 
-app.get('/categories/search', (req, res) => {
+app.get('/api/categories/search', (req, res) => {
   const query = req.query['q'];
   db.search(dbPool, query, (err, rows) => {
     if (err) {
@@ -23,7 +23,7 @@ app.get('/categories/search', (req, res) => {
   });
 });
 
-app.get('/categories', (_req, res) => {
+app.get('/api/categories', (_req, res) => {
   db.listCategories(dbPool, (err, rows) => {
     if (err) {
       logSqlError(res, err);
@@ -33,7 +33,7 @@ app.get('/categories', (_req, res) => {
   });
 });
 
-app.post('/categories', (req, res) => {
+app.post('/api/categories', (req, res) => {
   if (!req.body.displayName) {
     res.status(400).json({
       error: 'displayName is required'
@@ -57,7 +57,7 @@ app.post('/categories', (req, res) => {
   });
 });
 
-app.get('/categories/:conceptId', (req, res) => {
+app.get('/api/categories/:conceptId', (req, res) => {
   const conceptId = req.params['conceptId'];
   db.getCategory(dbPool, conceptId, (err, category) => {
     if (err && err.notFound) {
@@ -74,13 +74,13 @@ app.get('/categories/:conceptId', (req, res) => {
   });
 });
 
-app.put('/categories/:conceptId', (req, res) => {
+app.put('/api/categories/:conceptId', (req, res) => {
   const conceptId = req.params['conceptId'];
 
   // 400 to reject payload
 });
 
-app.delete('/categories/:conceptId', (req, res) => {
+app.delete('/api/categories/:conceptId', (req, res) => {
   const conceptId = req.params['conceptId'];
 });
 
