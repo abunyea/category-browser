@@ -4,6 +4,7 @@ import { Button, Input, Stack } from '@mui/material';
 export default function EditCategory() {
   const category = useLoaderData() || {};
   return (
+  <>
     <Form method='post' id='category-form'>
       <Stack>
       <label>Name: 
@@ -37,6 +38,16 @@ export default function EditCategory() {
       </p>
       </Stack>
     </Form>
+    <Form method='post' action={`/categories/${category.conceptId}/destroy`}
+          onSubmit={(event) => {
+            if (!window.confirm('Warning! Deleting this concept will orphan its children.')) {
+              event.preventDefault();
+            }
+          }}
+    >
+      <Button type='submit'>Delete</Button>
+    </Form>
+  </>
   );
 }
 
@@ -46,7 +57,7 @@ export async function loader({ params }) {
   return category;
 }
 
-export async function action({ request, params }) {
+export async function editAction({ request, params }) {
   const formData = await request.formData();
   const updates = Object.fromEntries(formData);
   const response = await fetch(`/api/categories/${params.conceptId}`, {
@@ -77,4 +88,14 @@ export async function createAction({ request, params }) {
   }
   const body = await response.json();
   return redirect(`/categories/${body.conceptId}`);
+}
+
+export async function destroyAction({ params }) {
+  const response = await fetch(`/api/categories/${params.conceptId}`, {
+    method: 'DELETE'
+  });
+  if (response.status < 200 || response.status >= 300) {
+    throw new Error('Failed to create');
+  }
+  return redirect('/');
 }

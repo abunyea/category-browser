@@ -9,7 +9,7 @@ import ErrorPage from './error-page';
 import Root from './routes/root';
 import Categories, { loader as categoriesLoader, searchLoader } from './routes/categories';
 import Category, { loader as categoryLoader } from './routes/category';
-import EditCategory, { action as editAction, createAction } from './routes/edit';
+import EditCategory, { editAction, createAction, destroyAction } from './routes/edit';
 import reportWebVitals from './reportWebVitals';
 
 const router = createBrowserRouter([
@@ -44,6 +44,10 @@ const router = createBrowserRouter([
         errorElement: <div>There was a problem updating your concept.</div>,
         loader: categoryLoader,
         action: editAction,
+      },
+      {
+        path: '/categories/:conceptId/destroy',
+        action: destroyAction,
       }
     ],
   },

@@ -4,6 +4,7 @@ export default function Category() {
   const category = useLoaderData();
   return (
     <>
+      <Link to='edit'>Edit</Link>
       <p>Name: {category.displayName}</p>
       <p>Alternate names: {category.alternateNames}</p>
       <p>Description: {category.description}</p>

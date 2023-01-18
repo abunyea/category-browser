@@ -137,6 +137,7 @@ function updateCategory(pool, conceptId, displayName, alternateNames, descriptio
     const insert = `UPDATE Categories
         SET displayName = ?, alternateNames = ?, description = ?
         WHERE conceptId = ?`;
+    const insertEdges = `INSERT INTO Edges (parentId, childId) VALUES ?;`;
     
     pool.getConnection((err, connection) => {
         if (err) {
@@ -144,11 +145,9 @@ function updateCategory(pool, conceptId, displayName, alternateNames, descriptio
         }
         let cleanup = (e) => {
             connection.release(); 
-            console.log('Released connection');
             callback(e);
         };
         connection.beginTransaction((err) => {
-            console.log('Transaction started');
             pool.query(insert, [displayName, alternateNames, description, conceptId], (err, result) => {
                 if (err) {
                     return connection.rollback(() => {
@@ -157,26 +156,55 @@ function updateCategory(pool, conceptId, displayName, alternateNames, descriptio
                 }
                 if (parentIds.length < 1) {
                     connection.commit((err) => {
-                        console.log('Committed result');
                         cleanup(err);
                     });
                     return;
                 }
-                console.log('Inserted category');
                 const parentChildren = [];
                 parentIds.forEach(parentId => {
                     parentChildren.push([parentId, conceptId]);
                 });
-                console.log(parentChildren);
-                pool.query(`INSERT INTO Edges (parentId, childId) VALUES ?;`, [parentChildren], (err) => {
-                    console.log('Inserted edges');
+                pool.query(insertEdges, [parentChildren], (err) => {
                     if (err) {
                         return connection.rollback(() => {
                             cleanup(err);
                         });
                     }
                     connection.commit((err) => {
-                        console.log('Committed result');
+                        cleanup(err);
+                    });
+                });
+            });
+        });
+    });
+}
+
+function deleteCategory(pool, conceptId, callback) {
+    const deleteCategory = 'DELETE FROM Categories WHERE conceptId = ?;';
+    const deleteEdges = 'DELETE FROM Edges WHERE parentId = ? OR childId = ?;';
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            return callback(err);
+        }
+        let cleanup = (e) => {
+            connection.release(); 
+            callback(e);
+        };
+        connection.beginTransaction((err) => {
+            pool.query(deleteCategory, [conceptId], (err, result) => {
+                if (err) {
+                    return connection.rollback(() => {
+                        cleanup(err);
+                    });
+                }
+                pool.query(deleteEdges, [conceptId, conceptId], (err) => {
+                    if (err) {
+                        return connection.rollback(() => {
+                            cleanup(err);
+                        });
+                    }
+                    connection.commit((err) => {
                         cleanup(err);
                     });
                 });
@@ -191,3 +219,4 @@ exports.getCategory = getCategory;
 exports.search = search;
 exports.createCategory = createCategory;
 exports.updateCategory = updateCategory;
+exports.deleteCategory = deleteCategory;

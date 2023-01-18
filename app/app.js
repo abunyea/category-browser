@@ -104,6 +104,13 @@ app.put('/api/categories/:conceptId', (req, res) => {
 
 app.delete('/api/categories/:conceptId', (req, res) => {
   const conceptId = req.params['conceptId'];
+  db.deleteCategory(dbPool, conceptId, (err) => {
+    if (err) {
+      logSqlError(res, err);
+      return;
+    }
+    res.sendStatus(204);
+  });
 });
 
 function logSqlError(res, err) {

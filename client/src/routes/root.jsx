@@ -19,11 +19,12 @@ export default function Root() {
               Category Browser 
             </Typography>
             <Form id='search-form' action='/search' role='search'>
-              <TextField label='Search'
+              <TextField id='search-input' 
+                         label='Search'
                          name='q'
                          type='search'
                          variant='filled'
-                         size='small'/>
+                         size='small' />
             </Form>
           </Toolbar>
         </AppBar>
