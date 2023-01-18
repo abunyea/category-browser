@@ -10,7 +10,7 @@ function connect() {
     })
 }
 
-function categories(pool, callback) {
+function listCategories(pool, callback) {
     const query = 'SELECT * FROM Categories';
     pool.query(query, callback);
 }
@@ -26,7 +26,7 @@ function search(pool, query, callback) {
     pool.query(selectMatch, [query], callback);
 }
 
-function category(pool, conceptId, callback) {
+function getCategory(pool, conceptId, callback) {
     const selectCategory = 'SELECT * FROM Categories WHERE conceptId = ?';
 
     const selectParents = `
@@ -80,7 +80,54 @@ function category(pool, conceptId, callback) {
     });
 }
 
+function createCategory(pool, displayName, alternateNames, description, parentIds, callback) {
+    const insert = `INSERT INTO 
+        Categories (displayName, alternateNames, description)
+        VALUES (?, ?, ?);`;
+    
+    pool.getConnection((err, connection) => {
+        if (err) {
+            return callback(err);
+        }
+        let cleanup = (e) => {
+            connection.release(); 
+            console.log('Released connection');
+            callback(e);
+        };
+        connection.beginTransaction((err) => {
+            console.log('Transaction started');
+            pool.query(insert, [displayName, alternateNames, description], (err, result) => {
+                if (err) {
+                    return connection.rollback(() => {
+                        cleanup(err);
+                    });
+                }
+                console.log('Inserted category');
+                const newConceptId = result.insertId;
+                const parentChildren = [];
+                parentIds.forEach(parentId => {
+                    parentChildren.push([parentId, newConceptId]);
+                });
+                console.log(parentChildren);
+                pool.query(`INSERT INTO Edges (parentId, childId) VALUES ?;`, [parentChildren], (err) => {
+                    console.log('Inserted edges');
+                    if (err) {
+                        return connection.rollback(() => {
+                            cleanup(err);
+                        });
+                    }
+                    connection.commit((err) => {
+                        console.log('Committed result');
+                        cleanup(err);
+                    });
+                });
+            });
+        });
+    });
+}
+
 exports.connect = connect;
-exports.categories = categories;
-exports.category = category;
+exports.listCategories = listCategories;
+exports.getCategory = getCategory;
+exports.createCategory = createCategory;
 exports.search = search;

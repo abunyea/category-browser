@@ -1,11 +1,16 @@
-const db = require('./db');
+var bodyParser = require('body-parser');
 const express = require('express')
 const path = require('path');
+
+const db = require('./db');
+
 const app = express()
 const port = 8080
 
 var dbPool = db.connect();
 
+
+app.use(bodyParser.json());
 
 app.get('/categories/search', (req, res) => {
   const query = req.query['q'];
@@ -19,7 +24,7 @@ app.get('/categories/search', (req, res) => {
 });
 
 app.get('/categories', (_req, res) => {
-  db.categories(dbPool, (err, rows) => {
+  db.listCategories(dbPool, (err, rows) => {
     if (err) {
       logSqlError(res, err);
       return;
@@ -28,9 +33,33 @@ app.get('/categories', (_req, res) => {
   });
 });
 
+app.post('/categories', (req, res) => {
+  if (!req.body.displayName) {
+    res.status(400).json({
+      error: 'displayName is required'
+    });
+    return;
+  }
+
+  db.createCategory(
+    dbPool, 
+    req.body.displayName, 
+    req.body.alternateNames || null, 
+    req.body.description || null,
+    req.body.parentIds || [],
+    (err) => {
+      if (err) {
+        logSqlError(res, err);
+        return;
+      }
+      console.log('Inside callback');
+      res.sendStatus(204);
+  });
+});
+
 app.get('/categories/:conceptId', (req, res) => {
   const conceptId = req.params['conceptId'];
-  db.category(dbPool, conceptId, (err, category) => {
+  db.getCategory(dbPool, conceptId, (err, category) => {
     if (err && err.notFound) {
       res.status(404).json({ 
         'message': err.message
@@ -43,6 +72,16 @@ app.get('/categories/:conceptId', (req, res) => {
     }
     res.json(category);
   });
+});
+
+app.put('/categories/:conceptId', (req, res) => {
+  const conceptId = req.params['conceptId'];
+
+  // 400 to reject payload
+});
+
+app.delete('/categories/:conceptId', (req, res) => {
+  const conceptId = req.params['conceptId'];
 });
 
 function logSqlError(res, err) {
