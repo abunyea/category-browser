@@ -10,7 +10,7 @@ export default function Categories() {
       <h3>All Categories</h3>
       <Stack>
         {categories.map((category) => (
-          <Typography>
+          <Typography key={category.conceptId}>
             <Link to={`/categories/${category.conceptId}`}>{category.displayName}</Link>
           </Typography>
         ))}

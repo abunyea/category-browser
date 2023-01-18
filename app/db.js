@@ -89,10 +89,10 @@ function createCategory(pool, displayName, alternateNames, description, parentId
         if (err) {
             return callback(err);
         }
-        let cleanup = (e) => {
+        let cleanup = (e, result) => {
             connection.release(); 
             console.log('Released connection');
-            callback(e);
+            callback(e, result);
         };
         connection.beginTransaction((err) => {
             console.log('Transaction started');
@@ -104,9 +104,68 @@ function createCategory(pool, displayName, alternateNames, description, parentId
                 }
                 console.log('Inserted category');
                 const newConceptId = result.insertId;
+                if (parentIds.length < 1) {
+                    connection.commit((err) => {
+                        console.log('Committed result');
+                        cleanup(err, { conceptId: newConceptId });
+                    });
+                    return;
+                }
                 const parentChildren = [];
                 parentIds.forEach(parentId => {
                     parentChildren.push([parentId, newConceptId]);
+                });
+                console.log(parentChildren);
+                pool.query(`INSERT INTO Edges (parentId, childId) VALUES ?;`, [parentChildren], (err) => {
+                    console.log('Inserted edges');
+                    if (err) {
+                        return connection.rollback(() => {
+                            cleanup(err);
+                        });
+                    }
+                    connection.commit((err) => {
+                        console.log('Committed result');
+                        cleanup(err, { conceptId: newConceptId });
+                    });
+                });
+            });
+        });
+    });
+}
+
+function updateCategory(pool, conceptId, displayName, alternateNames, description, parentIds, callback) {
+    const insert = `UPDATE Categories
+        SET displayName = ?, alternateNames = ?, description = ?
+        WHERE conceptId = ?`;
+    
+    pool.getConnection((err, connection) => {
+        if (err) {
+            return callback(err);
+        }
+        let cleanup = (e) => {
+            connection.release(); 
+            console.log('Released connection');
+            callback(e);
+        };
+        connection.beginTransaction((err) => {
+            console.log('Transaction started');
+            pool.query(insert, [displayName, alternateNames, description, conceptId], (err, result) => {
+                if (err) {
+                    return connection.rollback(() => {
+                        cleanup(err);
+                    });
+                }
+                if (parentIds.length < 1) {
+                    connection.commit((err) => {
+                        console.log('Committed result');
+                        cleanup(err);
+                    });
+                    return;
+                }
+                console.log('Inserted category');
+                const parentChildren = [];
+                parentIds.forEach(parentId => {
+                    parentChildren.push([parentId, conceptId]);
                 });
                 console.log(parentChildren);
                 pool.query(`INSERT INTO Edges (parentId, childId) VALUES ?;`, [parentChildren], (err) => {
@@ -129,5 +188,6 @@ function createCategory(pool, displayName, alternateNames, description, parentId
 exports.connect = connect;
 exports.listCategories = listCategories;
 exports.getCategory = getCategory;
-exports.createCategory = createCategory;
 exports.search = search;
+exports.createCategory = createCategory;
+exports.updateCategory = updateCategory;

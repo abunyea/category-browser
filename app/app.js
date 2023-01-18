@@ -12,6 +12,7 @@ var dbPool = db.connect();
 
 app.use(bodyParser.json());
 
+// search
 app.get('/api/categories/search', (req, res) => {
   const query = req.query['q'];
   db.search(dbPool, query, (err, rows) => {
@@ -23,6 +24,7 @@ app.get('/api/categories/search', (req, res) => {
   });
 });
 
+// list
 app.get('/api/categories', (_req, res) => {
   db.listCategories(dbPool, (err, rows) => {
     if (err) {
@@ -33,6 +35,7 @@ app.get('/api/categories', (_req, res) => {
   });
 });
 
+// create
 app.post('/api/categories', (req, res) => {
   if (!req.body.displayName) {
     res.status(400).json({
@@ -47,13 +50,12 @@ app.post('/api/categories', (req, res) => {
     req.body.alternateNames || null, 
     req.body.description || null,
     req.body.parentIds || [],
-    (err) => {
+    (err, result) => {
       if (err) {
         logSqlError(res, err);
         return;
       }
-      console.log('Inside callback');
-      res.sendStatus(204);
+      res.json({ conceptId: result.conceptId });
   });
 });
 
@@ -77,7 +79,27 @@ app.get('/api/categories/:conceptId', (req, res) => {
 app.put('/api/categories/:conceptId', (req, res) => {
   const conceptId = req.params['conceptId'];
 
-  // 400 to reject payload
+  if (!req.body.displayName) {
+    res.status(400).json({
+      error: 'displayName is required'
+    });
+    return;
+  }
+
+  db.updateCategory(
+    dbPool, 
+    conceptId,
+    req.body.displayName, 
+    req.body.alternateNames || null, 
+    req.body.description || null,
+    req.body.parentIds || [],
+    (err) => {
+      if (err) {
+        logSqlError(res, err);
+        return;
+      }
+      res.sendStatus(204);
+  });
 });
 
 app.delete('/api/categories/:conceptId', (req, res) => {

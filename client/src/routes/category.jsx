@@ -10,13 +10,13 @@ export default function Category() {
       Parents
       <ul>
         {category.parents.map((parent) =>
-          <li><Link to={`/categories/${parent.conceptId}`}>{parent.displayName}</Link></li>
+          <li key={parent.conceptId}><Link to={`/categories/${parent.conceptId}`}>{parent.displayName}</Link></li>
         )}
       </ul>
       Children
       <ul>
         {category.children.map((child) =>
-          <li><Link to={`/categories/${child.conceptId}`}>{child.displayName}</Link></li>
+          <li key={child.conceptId}><Link to={`/categories/${child.conceptId}`}>{child.displayName}</Link></li>
         )}
       </ul>
     </>
