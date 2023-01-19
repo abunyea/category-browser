@@ -4,7 +4,7 @@ USE Ontology;
 CREATE TABLE Categories(
 	conceptId      INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	displayName    VARCHAR(255),
-  	description    VARCHAR(255),
+  	description    VARCHAR(1024),
   	alternateNames VARCHAR(255),
 	FULLTEXT idx (displayName, description, alternateNames)
 );

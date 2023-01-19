@@ -29,7 +29,7 @@ export default function EditCategory() {
 	  label='Description'
 	  defaultValue={category.description} />
         <div>
-       	  {category.parents ? 'Parents:' : 'No Parents'}
+       	  {category.parents && category.parents.length > 0 ? 'Parents:' : 'No Parents'}
           <ul>
             {category.parents && category.parents.map((parent) =>
               <li key={parent.conceptId}>
@@ -39,7 +39,7 @@ export default function EditCategory() {
           </ul>
         </div>
         <div>
-          {category.children ? 'Children:' : 'No Children'}
+          {category.children && category.children.length > 0 ? 'Children:' : 'No Children'}
           <ul>
             {category.children && category.children.map((child) =>
               <li key={child.conceptId}>

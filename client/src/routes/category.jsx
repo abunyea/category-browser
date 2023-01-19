@@ -8,13 +8,13 @@ export default function Category() {
       <h2>{category.displayName}</h2>
       <p><i>Alternate names: {category.alternateNames}</i></p>
       <p>{category.description}</p>
-      {category.parents.length > 0 ? 'Parents:' : 'No Parents'}
+      {category.parents && category.parents.length > 0 ? 'Parents:' : 'No Parents'}
       <ul>
         {category.parents.map((parent) =>
           <li key={parent.conceptId}><Link to={`/categories/${parent.conceptId}`}>{parent.displayName}</Link></li>
         )}
       </ul>
-      {category.parents.length > 0 ? 'Children:' : 'No Children'}
+      {category.children && category.children.length > 0 ? 'Children:' : 'No Children'}
       <ul>
         {category.children.map((child) =>
           <li key={child.conceptId}><Link to={`/categories/${child.conceptId}`}>{child.displayName}</Link></li>
