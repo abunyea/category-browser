@@ -4,10 +4,10 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 export default function Categories() {
-  const categories = useLoaderData();
+  const { categories, q } = useLoaderData();
   return (
     <>
-      <h3>All Categories</h3>
+      <h2>All Concepts{q && `: ${q}`}</h2>
       <Stack>
         {categories.map((category) => (
           <Typography key={category.conceptId}>
@@ -22,12 +22,12 @@ export default function Categories() {
 export async function loader() {
   const response = await fetch('/api/categories');
   const categories = await response.json();
-  return categories;
+  return { categories };
 }
 
 export async function searchLoader({ request }) {
   const q = new URL(request.url).searchParams.get('q');
   const response = await fetch(`/api/categories/search?q=${q}`);
   const categories = await response.json();
-  return categories;
+  return { categories, q };
 }

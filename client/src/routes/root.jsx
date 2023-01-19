@@ -1,11 +1,13 @@
 import AppBar from '@mui/material/AppBar';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import TextField from '@mui/material/TextField';
+import Stack from '@mui/material/Stack';
+import Input from '@mui/material/Input';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-import { Form, Outlet } from 'react-router-dom';
+import { Form, Outlet, Link } from 'react-router-dom';
 
 const theme = createTheme();
 
@@ -15,17 +17,22 @@ export default function Root() {
       <ThemeProvider theme={theme}>
         <AppBar position="relative">
           <Toolbar>
-            <Typography variant="h6" color="inherit" noWrap>
-              Category Browser 
-            </Typography>
-            <Form id='search-form' action='/search' role='search'>
-              <TextField id='search-input' 
-                         label='Search'
-                         name='q'
-                         type='search'
-                         variant='filled'
-                         size='small' />
-            </Form>
+	    <Stack direction='row' spacing={2}>
+              <Typography variant='h6' color='inherit'>
+                Ontology Concepts
+              </Typography>
+	      <Button variant='contained' component={Link} to='/'>Home</Button>
+	      <Button variant='contained' component={Link} to='/categories/new'>Add Concept</Button>
+              <Form id='search-form' action='/search' role='search'>
+                <Input id='search-input' 
+                       label='Search'
+                       name='q'
+                       type='search'
+                       variant='filled'
+	               placeholder='Search'
+                       size='small' />
+              </Form>
+	    </Stack>
           </Toolbar>
         </AppBar>
           <Container maxWidth='sm'>

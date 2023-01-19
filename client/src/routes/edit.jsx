@@ -1,41 +1,60 @@
-import { Form, Link, redirect, useLoaderData } from 'react-router-dom';
-import { Button, Input, Stack } from '@mui/material';
+import { Form, Link, redirect, useLoaderData, useNavigate } from 'react-router-dom';
+import { Button, TextField, Stack } from '@mui/material';
 
 export default function EditCategory() {
   const category = useLoaderData() || {};
+  const navigate = useNavigate();
+
   return (
   <>
+    <h2>{category.conceptId ? 'Edit' : 'Add New Concept'}</h2>
+    <Stack spacing={2}>
     <Form method='post' id='category-form'>
-      <Stack>
-      <label>Name: 
-        <Input type='text' name='displayName' defaultValue={category.displayName} />
-      </label>
-      <label>Alternate names: 
-        <Input type='text' name='alternateNames' defaultValue={category.alternateNames} />
-      </label>
-      <label>Description: 
-        <Input type='textarea' multiline name='description' defaultValue={category.description} />
-      </label>
-      Parents
-      <ul>
-        {category.parents ? category.parents.map((parent) =>
-          <li key={parent.conceptId}>
-            <Link to={`/categories/${parent.conceptId}`}>{parent.displayName}</Link>
-          </li>
-        ) : 'No parents'}
-      </ul>
-      Children
-      <ul>
-        {category.children ? category.children.map((child) =>
-          <li key={child.conceptId}>
-            <Link to={`/categories/${child.conceptId}`}>{child.displayName}</Link>
-          </li>
-        ) : 'No children'}
-      </ul>
-      <p>
-        <Button type="submit">Save</Button>
-        <Button type="button">Cancel</Button>
-      </p>
+      <Stack spacing={2}>
+        <TextField
+	  required
+	  type='text'
+	  name='displayName'
+	  label='Name'
+	  defaultValue={category.displayName} />
+        <TextField
+	  type='text'
+	  name='alternateNames'
+	  label='Alternate Names'
+	  defaultValue={category.alternateNames} />
+        <TextField 
+	  type='textarea'
+	  multiline 
+	  name='description'
+	  label='Description'
+	  defaultValue={category.description} />
+        <div>
+       	  {category.parents ? 'Parents:' : 'No Parents'}
+          <ul>
+            {category.parents && category.parents.map((parent) =>
+              <li key={parent.conceptId}>
+                <Link to={`/categories/${parent.conceptId}`}>{parent.displayName}</Link>
+              </li>
+            )}
+          </ul>
+        </div>
+        <div>
+          {category.children ? 'Children:' : 'No Children'}
+          <ul>
+            {category.children && category.children.map((child) =>
+              <li key={child.conceptId}>
+                <Link to={`/categories/${child.conceptId}`}>{child.displayName}</Link>
+              </li>
+            )}
+          </ul>
+        </div>
+        <Stack direction='row' spacing={1}>
+          <Button variant='contained' type='submit'>Save</Button>
+          <Button variant='contained' type='button' onClick={() => {
+              navigate(-1);
+            }}>Cancel
+	  </Button>
+        </Stack>
       </Stack>
     </Form>
     <Form method='post' action={`/categories/${category.conceptId}/destroy`}
@@ -43,10 +62,10 @@ export default function EditCategory() {
             if (!window.confirm('Warning! Deleting this concept will orphan its children.')) {
               event.preventDefault();
             }
-          }}
-    >
-      <Button type='submit'>Delete</Button>
+          }}>
+      <Button variant='contained' type='submit' color='error'>Delete</Button>
     </Form>
+    </Stack>
   </>
   );
 }
@@ -76,7 +95,11 @@ export async function editAction({ request, params }) {
 export async function createAction({ request, params }) {
   const formData = await request.formData();
   const updates = Object.fromEntries(formData);
-  const response = await fetch(`/api/categories`, {
+  const searchParams = new URL(request.url).searchParams;
+  if (searchParams.has('parentId')) {
+    updates['parentIds'] = [searchParams.get('parentId')];
+  }
+  const response = await fetch('/api/categories', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
